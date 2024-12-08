@@ -7,6 +7,8 @@ function App() {
   const [name, setName] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [mousePositions, setMousePositions] = useState({});
+  const [points, setPoints] = useState([]);
+  const [ranking, setRanking] = useState([]);
 
   const handleLogin = () => {
     if (name.trim()) {
@@ -30,6 +32,7 @@ function App() {
             y: data.y,
             color: data.color,
             name: data.name,
+            points: data.points,
           },
         }));
       });
@@ -41,10 +44,19 @@ function App() {
             y: pos.y,
             color: pos.color,
             name: pos.name,
+            points: pos.points,
           };
           return acc;
         }, {});
         setMousePositions(positionsMap);
+      });
+
+      socket.on("allPoints", (points) => {
+        setPoints(points);
+      });
+
+      socket.on("ranking", (ranking) => {
+        setRanking(ranking);
       });
 
       window.addEventListener("mousemove", handleMouseMove);
@@ -53,6 +65,8 @@ function App() {
         window.removeEventListener("mousemove", handleMouseMove);
         socket.off("mouseMove");
         socket.off("allMousePositions");
+        socket.off("allPoints");
+        socket.off("ranking");
       };
     }
   }, [isLoggedIn]);
@@ -94,10 +108,43 @@ function App() {
               color: mousePositions[sessionId].color,
             }}
           >
-            {mousePositions[sessionId].name}
+            {mousePositions[sessionId].name} ({mousePositions[sessionId].points}
+            )
           </span>
         </div>
       ))}
+      {points.map((point, index) => (
+        <div
+          key={index}
+          style={{
+            position: "absolute",
+            top: point.y,
+            left: point.x,
+            width: "10px",
+            height: "10px",
+            backgroundColor: "yellow",
+            borderRadius: "50%",
+          }}
+        />
+      ))}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          right: 0,
+          backgroundColor: "white",
+          padding: "10px",
+        }}
+      >
+        <h3>Ranking</h3>
+        <ul>
+          {ranking.map((player, index) => (
+            <li key={index} style={{ color: player.color }}>
+              {player.name}: {player.points}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
