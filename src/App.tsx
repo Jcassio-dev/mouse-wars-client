@@ -122,8 +122,7 @@ function App() {
             left: point.x,
             width: "10px",
             height: "10px",
-            backgroundColor: "yellow",
-            borderRadius: "50%",
+            backgroundColor: point.color,
           }}
         />
       ))}
